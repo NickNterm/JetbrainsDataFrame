@@ -54,7 +54,7 @@ fun tdElement(
     value: String,
     extra: MutableMap<String, Pair<Int, Int>>
 ): String {
-    return if (type == typeOf<Int>()) {
+    return if (type == typeOf<Int?>() || type == typeOf<Int>()) {
         "<td style=\"background-color:${
             getColor(
                 extra[columnName]!!.first,
@@ -62,14 +62,21 @@ fun tdElement(
                 value.toInt()
             )
         };\">$value</td>"
-    } else if (type == typeOf<Boolean>()) {
+    } else if (type == typeOf<Boolean?>() || type == typeOf<Boolean>()) {
         if (value.equals("true")) {
             "<td style=\"background-color:green\">&#10003;</td>"
         } else {
             "<td style=\"background-color:red;\">&#10007;</td>"
         }
-    } else if (type == typeOf<String>()) {
-        "<td>$value</td>"
+    } else if (type == typeOf<String?>() || type == typeOf<String>()) {
+        val imageRegex = Regex("(https|http)://.*\\.(png|jpg|jpeg)")
+        println("value $value")
+        println("matches ${imageRegex.matches(value)}")
+        if (imageRegex.matches(value)) {
+            "<td><img src=\"${value}\" width=100px height=100px></td>"
+        } else {
+            "<td>$value</td>"
+        }
     } else {
         "<td>$value</td>"
     }
@@ -191,13 +198,19 @@ fun main() {
     // Read csv to load the DataFrame
     var df = DataFrame.read("netflix.csv")
 
+    var images = listOf(
+        "https://pbs.twimg.com/profile_images/1399329694340747271/T5fbWxtN_400x400.png",
+        "https://www.jetbrainsmerchandise.com/media/catalog/product/cache/ecfe99657bcf987295ea6f61f389da7e/j/b/jbst-012_jetbrains_logo.png"
+    )
     // adding a Score on the Dataframe to have an integer to test on
     df = df.add("Score") { Random.nextInt(0, 6) }
         .rename("Release Year").into("ReleaseYear")
         // add a boolean to have test it out
         .add("isSeries") { (it["Duration"] as String).endsWith("min") }
+        .add("Preview") { if (Random.nextBoolean()) images.random() else null }
+        .fillNulls("Preview").with { "" }
 
 
-    //println(df.toCustomHtml())
+    println(df.schema())
     File("index.html").writeText(df.toCustomHtml())
 }
