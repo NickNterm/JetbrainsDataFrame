@@ -181,8 +181,8 @@ tbody tr:hover {
 fun <T> DataFrame<T>.toCustomHtml(): String {
     // built the html string
     val html = buildString {
-        append("<html>")
-        append("<style type=\"text/css\">")
+        append("<html>\n")
+        append("<style type=\"text/css\">\n")
         append(tablecss())
         append("</style>")
         append("<table class=\"dataframe\">")
@@ -205,12 +205,12 @@ fun main() {
     // adding a Score on the Dataframe to have an integer to test on
     df = df.add("Score") { Random.nextInt(0, 6) }
         .rename("Release Year").into("ReleaseYear")
-        // add a boolean to have test it out
+        // add a boolean to test it out
         .add("isSeries") { (it["Duration"] as String).endsWith("min") }
         .add("Preview") { if (Random.nextBoolean()) images.random() else null }
         .fillNulls("Preview").with { "" }
 
 
     println(df.schema())
-    File("index.html").writeText(df.toCustomHtml())
+    File("src/main/kotlin/index.html").writeText(df.toCustomHtml())
 }
